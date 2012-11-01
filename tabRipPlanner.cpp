@@ -81,7 +81,7 @@ RipPlannerTab::RipPlannerTab( wxWindow *parent, const wxWindowID id,
     mPlanner = NULL;
 
     sizerFull = new wxBoxSizer( wxHORIZONTAL );
- 
+
     // ** Create left static box for configuring the planner **
 
     // Create StaticBox container for all items
@@ -218,11 +218,11 @@ void RipPlannerTab::OnRadio(wxCommandEvent &evt) {
  * @brief Handle Button Events
  */
 void RipPlannerTab::OnButton(wxCommandEvent &evt) {
-  
+
   int button_num = evt.GetId();
-  
+
   switch (button_num) {
-    
+
     /** Set Start */
   case button_SetStart:
     if ( mWorld != NULL ) {
@@ -231,17 +231,17 @@ void RipPlannerTab::OnButton(wxCommandEvent &evt) {
 	break;
       }
       std::cout << "(i) Setting Start state for " << mWorld->getRobot(mRobotId)->getName() << ":" << std::endl;
-      
+
       mStartConf = mWorld->getRobot(mRobotId)->getQuickDofs();
-      
+
       for( unsigned int i = 0; i < mStartConf.size(); i++ )
-	{  std::cout << mStartConf(i) << " ";  } 
+	{  std::cout << mStartConf(i) << " ";  }
       std::cout << std::endl;
     } else {
       std::cout << "(!) Must have a world loaded to set a Start state." << std::endl;
     }
     break;
-    
+
     /** Set Goal */
   case button_SetGoal:
     if ( mWorld != NULL ) {
@@ -250,57 +250,57 @@ void RipPlannerTab::OnButton(wxCommandEvent &evt) {
 	break;
       }
       std::cout << "(i) Setting Goal state for " << mWorld->getRobot(mRobotId)->getName() << ":" << std::endl;
-      
+
       mGoalConf = mWorld->getRobot(mRobotId)->getQuickDofs();
-      
+
       for( unsigned int i = 0; i < mGoalConf.size(); i++ )
-	{ std::cout << mGoalConf(i) << " "; } 
+	{ std::cout << mGoalConf(i) << " "; }
       std::cout << std::endl;
     } else {
       std::cout << "(!) Must have a world loaded to set a Goal state"<< std::endl;
     }
     break;
-    
+
     /** Show Start */
   case button_showStart:
     if( mStartConf.size() < 1 ){
       std::cout << "(x) First, set a start configuration" << std::endl;
       break;
-    } 
-    
+    }
+
     mWorld->getRobot(mRobotId)->setQuickDofs( mStartConf );
-    
+
     for( unsigned int i = 0; i< mStartConf.size(); i++ )
       {  std::cout << mStartConf(i) << " "; }
     std::cout << std::endl;
-    
+
     mWorld->getRobot(mRobotId)->update();
-    viewer->UpdateCamera(); 
+    viewer->UpdateCamera();
     break;
-    
+
     /** Show Goal */
   case button_showGoal:
     if( mGoalConf.size() < 1 ){
       std::cout << "(x) First, set a goal configuration" << std::endl;
       break;
     }
-    
+
     mWorld->getRobot(mRobotId)->setQuickDofs( mGoalConf );
-    
+
     for( unsigned int i = 0; i< mGoalConf.size(); i++ )
       {  std::cout << mGoalConf[i] << " ";  }
     std::cout << std::endl;
-    
+
     mWorld->getRobot(mRobotId)->update();
-    viewer->UpdateCamera(); 
+    viewer->UpdateCamera();
     break;
-    
-    /** Reset Planner */ 
+
+    /** Reset Planner */
   case button_resetPlanner:
     if ( mWorld != NULL) {
       if ( mPlanner != NULL)
 	delete mPlanner;
-      
+
       std::cout << "Creating a new planner" << std::endl;
       double stepSize = 0.1; // default
       mPlanner = new PathPlanner( *mWorld, false, stepSize );
@@ -308,7 +308,7 @@ void RipPlannerTab::OnButton(wxCommandEvent &evt) {
       std::cout << "(!) Must have a world loaded to make a planner" << std::endl;
     }
     break;
-    
+
     /** Empty button 1 */
   case button_empty1:
     {
@@ -319,68 +319,68 @@ void RipPlannerTab::OnButton(wxCommandEvent &evt) {
 	{ printf("Collisions \n");}
       else
 	{ printf("No Collisions \n");}
-      
+
     }
     break;
-    
+
     /** Empty button 2 */
   case button_empty2:
     std::cout << "-- (0) Empty Button to use for whatever you want (0)--" << std::endl;
     break;
-    
+
     /** Execute Plan */
   case button_Plan:
-    {         
+    {
       if( mGoalConf.size() < 0 ){ std::cout << "(x) Must set a goal" << std::endl; break; }
       if( mStartConf.size() < 0 ){ std::cout << "(x) Must set a start" << std::endl; break; }
       if( mWorld == NULL ){ std::cout << "(x) Must load a world" << std::endl; break; }
       if( mWorld->getNumRobots() < 1){ std::cout << "(x) Must load a world with a robot" << std::endl; break; }
-      
+
       double stepSize = 0.02;
-      
+
       mPlanner = new PathPlanner( *mWorld, false, stepSize );
       //wxThread planThread;
       //planThread.Create();
       mLinks = mWorld->getRobot(mRobotId)->getQuickDofsIndices();
-      
+
       int maxNodes = 5000;
-      bool result = mPlanner->planPath( mRobotId, 
-					mLinks, 
-					mStartConf, 
-					mGoalConf, 
-					mRrtStyle,  
+      bool result = mPlanner->planPath( mRobotId,
+					mLinks,
+					mStartConf,
+					mGoalConf,
+					mRrtStyle,
 					mConnectMode,
-					mGreedyMode, 
-					mSmooth, 
+					mGreedyMode,
+					mSmooth,
 					maxNodes );
       if( result  )
 	{  SetTimeline(); }
     }
     break;
-    
+
     /** Update Time */
   case button_UpdateTime:
     {
       /// Update the time span of the movie timeline
       SetTimeline();
-    }		
+    }
     break;
-    
+
     /** Show Path */
-  case button_ShowPath:            
+  case button_ShowPath:
     if( mWorld == NULL || mPlanner == NULL || mPlanner->path.size() == 0 ) {
       std::cout << "(!) Must create a valid plan before printing."<<std::endl;
       return;
     } else {
       std::cout<<"(i) Printing...Implement me :)"<<std::endl;
-    }        
+    }
     break;
   }
 }
 
 /**
  * @function setTimeLine
- * @brief 
+ * @brief
  */
 void RipPlannerTab::SetTimeline() {
 
@@ -414,17 +414,17 @@ void RipPlannerTab::SetTimeline() {
 /**
  * @function OnCheckBox
  * @brief Handle CheckBox Events
- */ 
+ */
 void RipPlannerTab::OnCheckBox( wxCommandEvent &evt ) {
   int checkbox_num = evt.GetId();
-  
+
   switch (checkbox_num) {
-    
+
   case checkbox_beGreedy:
     mGreedyMode = (bool)evt.GetSelection();
     std::cout << "(i) greedy = " << mGreedyMode << std::endl;
     break;
-    
+
   case checkbox_useConnect:
     mConnectMode = (bool)evt.GetSelection();
     std::cout << "(i) useConnect = " << mConnectMode << std::endl;
@@ -444,24 +444,24 @@ void RipPlannerTab::OnSlider(wxCommandEvent &evt) {
   if (selectedTreeNode == NULL) {
     return;
   }
-  
+
   int slnum = evt.GetId();
   double pos = *(double*) evt.GetClientData();
   char numBuf[1000];
-  
+
   switch (slnum) {
   case slider_Time:
     sprintf(numBuf, "X Change: %7.4f", pos);
     std::cout << "(i) Timeline slider output: " << numBuf << std::endl;
     //handleTimeSlider(); // uses slider position to query plan state
     break;
-    
+
   default:
     return;
   }
   //world->updateCollision(o);
   //viewer->UpdateCamera();
-  
+
   if (frame != NULL)
     frame->SetStatusText(wxString(numBuf, wxConvUTF8));
 }
@@ -475,43 +475,43 @@ void RipPlannerTab::GRIPStateChange() {
   if ( selectedTreeNode == NULL ) {
     return;
   }
-  
+
   std::string statusBuf;
   std::string buf, buf2;
-  
+
   switch (selectedTreeNode->dType) {
-    
+
   case Return_Type_Object:
     mSelectedObject = (robotics::Object*) ( selectedTreeNode->data );
     statusBuf = " Selected Object: " + mSelectedObject->getName();
     buf = "You clicked on object: " + mSelectedObject->getName();
-    
+
     // Enter action for object select events here:
-    
+
     break;
   case Return_Type_Robot:
     mSelectedRobot = (robotics::Robot*) ( selectedTreeNode->data );
     statusBuf = " Selected Robot: " + mSelectedRobot->getName();
     buf = " You clicked on robot: " + mSelectedRobot->getName();
-    
+
     // Enter action for Robot select events here:
-    
+
     break;
   case Return_Type_Node:
     mSelectedNode = (dynamics::BodyNodeDynamics*) ( selectedTreeNode->data );
     statusBuf = " Selected Body Node: " + string(mSelectedNode->getName()) + " of Robot: "
       + ( (robotics::Robot*) mSelectedNode->getSkel() )->getName();
     buf = " Node: " + std::string(mSelectedNode->getName()) + " of Robot: " + ( (robotics::Robot*) mSelectedNode->getSkel() )->getName();
-    
+
     // Enter action for link select events here:
-    
+
     break;
   default:
     fprintf(stderr, "--( :D ) Someone else's problem!\n");
     assert(0);
     exit(1);
   }
-  
+
   //cout << buf << endl;
   frame->SetStatusText(wxString(statusBuf.c_str(), wxConvUTF8));
   sizerFull->Layout();

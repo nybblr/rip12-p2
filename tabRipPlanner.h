@@ -41,7 +41,7 @@ public:
 
     wxTextCtrl *mTimeText;
 
-    // public vars to capture external selection stuff 
+    // public vars to capture external selection stuff
     robotics::Object* mSelectedObject;
     robotics::Robot* mSelectedRobot;
     dynamics::BodyNodeDynamics* mSelectedNode;

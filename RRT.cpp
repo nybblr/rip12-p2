@@ -20,25 +20,25 @@
  * @function RRT
  * @brief Constructor
  */
-RRT::RRT( robotics::World *_world, 
-          int _robotId, 
-          const Eigen::VectorXi &_links, 
-          const Eigen::VectorXd &_root, 
+RRT::RRT( robotics::World *_world,
+          int _robotId,
+          const Eigen::VectorXi &_links,
+          const Eigen::VectorXd &_root,
           double _stepSize ) {
-  
+
   /// Initialize some member variables
-  world = _world; 
+  world = _world;
   robotId = _robotId;
-  links = _links; 
+  links = _links;
   ndim = links.size();
   stepSize = _stepSize;
-  
-  /// Initialize random generator   
+
+  /// Initialize random generator
   srand( time(NULL) );
-  
-  /// Create kdtree and add the first node (start) 
+
+  /// Create kdtree and add the first node (start)
   kdTree = kd_create( ndim );
-  addNode( _root, -1 ); 
+  addNode( _root, -1 );
 }
 
 /**
@@ -63,18 +63,18 @@ bool RRT::connect() {
  * @brief Connect the closest node with _target, stop until it is reached or until it collides
  */
 bool RRT::connect( const Eigen::VectorXd &_target ) {
-  
+
   int NNIdx = getNearestNeighbor( _target );
   StepResult result = STEP_PROGRESS;
   int i = 0;
   while( result == STEP_PROGRESS ) {
-    
+
     result = tryStepFromNode( _target, NNIdx );
     NNIdx = configVector.size() -1;
-    i++; 
+    i++;
   }
   return ( result == STEP_REACHED );
-  
+
 }
 
 /**
@@ -97,31 +97,31 @@ RRT::StepResult RRT::tryStep( const Eigen::VectorXd &_qtry ) {
 
 /**
  * @function tryStepFromNode
- * @brief Tries to extend tree towards provided sample (must be overridden for MBP ) 
+ * @brief Tries to extend tree towards provided sample (must be overridden for MBP )
  */
 RRT::StepResult RRT::tryStepFromNode( const Eigen::VectorXd &_qtry, int _NNIdx ) {
-  
-  /// Calculates a new node to grow towards _qtry, check for collisions and adds to tree 
+
+  /// Calculates a new node to grow towards _qtry, check for collisions and adds to tree
   Eigen::VectorXd qnear = configVector[_NNIdx];
-  
+
   /// Compute direction and magnitude
   Eigen::VectorXd diff = _qtry - qnear;
   double dist = diff.norm();
-  
-  if( dist < stepSize ) { 
-    return STEP_REACHED; 
+
+  if( dist < stepSize ) {
+    return STEP_REACHED;
   }
-  
+
   /// Scale this vector to stepSize and add to end of qnear
   Eigen::VectorXd qnew = qnear + diff*(stepSize/dist);
-  
+
   if( !checkCollisions(qnew) ) {
     addNode( qnew, _NNIdx );
     return STEP_PROGRESS;
   } else {
     return STEP_COLLISION;
   }
-  
+
 }
 
 /**
@@ -134,13 +134,13 @@ int RRT::addNode( const Eigen::VectorXd &_qnew, int _parentId )
   /// Update graph vectors -- what does this mean?
   configVector.push_back( _qnew );
   parentVector.push_back( _parentId );
-  
+
   uintptr_t id = configVector.size() - 1;
   kd_insert( kdTree, _qnew.data(), (void*) id ); //&idVector[id];  /// WTH? -- ahq
 
   activeNode = id;
   return id;
-}  
+}
 
 /**
  * @function getRandomConfig
@@ -152,10 +152,10 @@ Eigen::VectorXd RRT::getRandomConfig() {
   for( unsigned int i = 0; i < ndim; i++ ) {
     double minVal = world->getRobot(robotId)->getDof(links[i])->getMin();
     double maxVal = world->getRobot(robotId)->getDof(links[i])->getMax();
-    config[i] = randomInRange( minVal, maxVal ); 
+    config[i] = randomInRange( minVal, maxVal );
   }
-  
-  return config;       
+
+  return config;
 }
 
 /**
@@ -169,7 +169,7 @@ int RRT::getNearestNeighbor( const Eigen::VectorXd &_qsamp ) {
 
     activeNode = nearest;
     return nearest;
-   
+
 }
 
 /**
@@ -184,12 +184,12 @@ double RRT::getGap( const Eigen::VectorXd &_target ) {
  * @function tracePath
  * @brief Traces the path from some node to the initConfig node
  */
-void RRT::tracePath( int _node, 
-                     std::list<Eigen::VectorXd> &_path, 
+void RRT::tracePath( int _node,
+                     std::list<Eigen::VectorXd> &_path,
                      bool _reverse ) {
-  
+
     int x = _node;
-    
+
     while( x != -1 ) {
       if( !_reverse ) {
 	_path.push_front( configVector[x] );
@@ -224,5 +224,5 @@ unsigned int RRT::getSize() {
  */
 double RRT::randomInRange( double _min, double _max ) {
 
-    return _min + ((_max - _min) * ((double)rand() / ((double)RAND_MAX + 1))); 
+    return _min + ((_max - _min) * ((double)rand() / ((double)RAND_MAX + 1)));
 }

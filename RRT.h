@@ -43,61 +43,61 @@ public:
 
     int ndim;
     double stepSize;
-  
+
     int activeNode;
     std::vector<int> parentVector; /**< Vector of indices to relate configs in RRT */
     std::vector<Eigen::VectorXd> configVector; /**< Vector of all visited configs */
-          
+
     struct kdtree *kdTree;
 
     /// Constructor
     RRT( robotics::World* _world,
-         int _robotId, 
-         const Eigen::VectorXi &_links, 
-         const Eigen::VectorXd &_root, 
+         int _robotId,
+         const Eigen::VectorXi &_links,
+         const Eigen::VectorXd &_root,
          double _stepSize = 0.02 );
-    
+
     /// Destructor
     virtual ~RRT();
-    
+
     /// Connect a random target with the closest tree node (until reaching or colliding)
     bool connect();
     /// Connect the target with the closest tree node, (until reaching or colliding )
     bool connect( const Eigen::VectorXd &_target );
-    
+
     /// Try to advance one stepSize towards a random target
     StepResult tryStep();
     /// Try to advance one stepSize towards qtry
     StepResult tryStep( const Eigen::VectorXd &_qtry );
 
-    /// Tries to extend tree towards provided sample (must be overridden for MBP ) 
+    /// Tries to extend tree towards provided sample (must be overridden for MBP )
     virtual StepResult tryStepFromNode( const Eigen::VectorXd &_qtry, int _NNIdx );
-    
+
     /// Add qnew to tree with parent _parentId
-    int addNode( const Eigen::VectorXd &_qnew, int _parentId );  
-    
+    int addNode( const Eigen::VectorXd &_qnew, int _parentId );
+
     /// Returns a random config
     virtual Eigen::VectorXd getRandomConfig();
-    
+
     /// Returns Nearest Neighbor index to query point
     int getNearestNeighbor( const Eigen::VectorXd &_qsamp );
-    
+
     /// Get the gap (Distance) between the closest node in the tree to the _target
     double getGap( const Eigen::VectorXd &_target );
-    
+
     /// Traces the path from some node to the initConfig node
     void tracePath( int _node, std::list<Eigen::VectorXd> &_path, bool _reverse = false );
-    
+
     /// Implementation-specific function for checking collisions (must be overridden for MBP )
     virtual bool checkCollisions( const Eigen::VectorXd &c );
-    
+
     unsigned int getSize();
-    
+
 protected:
-   
+
    /// Get random number between min and max
    double randomInRange( double _min, double _max );
-     
+
 };
 
 #endif /** _RRT_H_ */
