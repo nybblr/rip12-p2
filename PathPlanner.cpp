@@ -123,7 +123,10 @@ bool PathPlanner::planSingleTreeRrt( int _robotId,
       } else {
 
   // ================== YOUR CODE HERE ===================
-
+				if(randomInRange(0, 1) > 0.5)
+					rrt.tryStep();
+				else
+					rrt.tryStep(_goal);
   // =====================================================
 
       }
