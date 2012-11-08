@@ -56,7 +56,7 @@ PathPlanner::~PathPlanner() {
  * @brief Main function
  */
 bool PathPlanner::planPath( int _robotId,
-			    const Eigen::VectorXi &_links,
+                            const Eigen::VectorXi &_links,
                             const Eigen::VectorXd &_start,
                             const Eigen::VectorXd &_goal,
                             bool _bidirectional,
@@ -115,16 +115,16 @@ bool PathPlanner::planSingleTreeRrt( int _robotId,
       /** greedy and connect */
       if( _connect ) {
 
-	// ================ YOUR CODE HERE ===============
+  // ================ YOUR CODE HERE ===============
 
-	// ===============================================
+  // ===============================================
 
-	/** greedy and NO connect */
+  /** greedy and NO connect */
       } else {
 
-	// ================== YOUR CODE HERE ===================
+  // ================== YOUR CODE HERE ===================
 
-	// =====================================================
+  // =====================================================
 
       }
 
@@ -133,11 +133,11 @@ bool PathPlanner::planSingleTreeRrt( int _robotId,
 
       /** NO greedy and Connect */
       if( _connect ) {
-	rrt.connect();
+  rrt.connect();
 
-	/** No greedy and No connect -- PLAIN RRT */
+  /** No greedy and No connect -- PLAIN RRT */
       } else {
-	rrt.tryStep();
+  rrt.tryStep();
       }
 
     }
