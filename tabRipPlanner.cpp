@@ -343,7 +343,7 @@ void RipPlannerTab::OnButton(wxCommandEvent &evt) {
       //planThread.Create();
       mLinks = mWorld->getRobot(mRobotId)->getQuickDofsIndices();
 
-      int maxNodes = 5000;
+      int maxNodes = 50000;
       bool result = mPlanner->planPath( mRobotId,
 					mLinks,
 					mStartConf,

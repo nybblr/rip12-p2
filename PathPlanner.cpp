@@ -116,14 +116,17 @@ bool PathPlanner::planSingleTreeRrt( int _robotId,
       if( _connect ) {
 
   // ================ YOUR CODE HERE ===============
-
+				if(randomInRange(0, 1) < 0.7)
+					rrt.connect();
+				else
+					rrt.connect(_goal);
   // ===============================================
 
   /** greedy and NO connect */
       } else {
 
   // ================== YOUR CODE HERE ===================
-				if(randomInRange(0, 1) > 0.5)
+				if(randomInRange(0, 1) < 0.7)
 					rrt.tryStep();
 				else
 					rrt.tryStep(_goal);
