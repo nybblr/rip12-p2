@@ -185,12 +185,11 @@ bool PathPlanner::planBidirectionalRrt( int _robotId,
 	RRT rrts( world, _robotId, _links, _start, stepSize );
 	RRT rrtg( world, _robotId, _links, _goal, stepSize );
 	RRT::StepResult result = RRT::STEP_PROGRESS;
-	RRT::StepResult result = RRT::STEP_PROGRESS;
 
 	double smallestGap = DBL_MAX;
 	const _sg = _start;
 	const _gs = _goal;
-	while ( result != RRTS::STEP_REACHED && smallestGap > stepSize ) {
+	while ( result != RRT::STEP_REACHED && smallestGap > stepSize ) {
 
 	/** greedy section */
 	if( _greedy ) {
