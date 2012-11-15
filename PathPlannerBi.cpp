@@ -187,8 +187,8 @@ bool PathPlanner::planBidirectionalRrt( int _robotId,
 	RRT::StepResult result = RRT::STEP_PROGRESS;
 
 	double smallestGap = DBL_MAX;
-	const _sg = _start;
-	const _gs = _goal;
+	Eigen::VectorXd sg = _start;
+	Eigen::VectorXd gs = _goal;
 	while ( result != RRT::STEP_REACHED && smallestGap > stepSize ) {
 
 	/** greedy section */
@@ -199,7 +199,8 @@ bool PathPlanner::planBidirectionalRrt( int _robotId,
 
 	// ================ YOUR CODE HERE ===============
 				if(randomInRange(0, 10) < 7)
-					rrt.connect();
+					// Eigen::VectorXd newest = rrts.configVector.back()
+
 				else
 					rrt.connect(_gs);
 	// ===============================================
@@ -216,18 +217,7 @@ bool PathPlanner::planBidirectionalRrt( int _robotId,
 
 			}
 
-			/** NO greedy section */
-		} else {
-
-			/** NO greedy and Connect */
-			if( _connect ) {
-	rrt.connect();
-
-	/** No greedy and No connect -- PLAIN RRT */
-			} else {
-	rrt.tryStep();
 		}
-
 	}
 
 		if( _maxNodes > 0 && rrt.getSize() > _maxNodes ) {
