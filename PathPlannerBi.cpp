@@ -18,8 +18,8 @@
  * @brief Constructor
  */
 PathPlanner::PathPlanner() {
-  copyWorld = false;
-  world = NULL;
+	copyWorld = false;
+	world = NULL;
 }
 
 /**
@@ -27,17 +27,17 @@ PathPlanner::PathPlanner() {
  * @brief Constructor
  */
 PathPlanner::PathPlanner( robotics::World &_world,
-                          bool _copyWorld, double _stepSize ) {
+													bool _copyWorld, double _stepSize ) {
 
-  copyWorld = _copyWorld;
+	copyWorld = _copyWorld;
 
-  if( copyWorld ) {
-    printf( "Do not use this option yet \n" );
-  } else {
-    world = &_world;
-  }
+	if( copyWorld ) {
+		printf( "Do not use this option yet \n" );
+	} else {
+		world = &_world;
+	}
 
-  stepSize = _stepSize;
+	stepSize = _stepSize;
 }
 
 /**
@@ -46,9 +46,9 @@ PathPlanner::PathPlanner( robotics::World &_world,
  */
 PathPlanner::~PathPlanner() {
 
-  if( copyWorld ) {
-    delete world;
-  }
+	if( copyWorld ) {
+		delete world;
+	}
 }
 
 /**
@@ -56,37 +56,37 @@ PathPlanner::~PathPlanner() {
  * @brief Main function
  */
 bool PathPlanner::planPath( int _robotId,
-                            const Eigen::VectorXi &_links,
-                            const Eigen::VectorXd &_start,
-                            const Eigen::VectorXd &_goal,
-                            bool _bidirectional,
-                            bool _connect,
-                            bool _greedy,
-                            bool _smooth,
-                            unsigned int _maxNodes ) {
+														const Eigen::VectorXi &_links,
+														const Eigen::VectorXd &_start,
+														const Eigen::VectorXd &_goal,
+														bool _bidirectional,
+														bool _connect,
+														bool _greedy,
+														bool _smooth,
+														unsigned int _maxNodes ) {
 
 
-  //world->mRobots[_robotId]->setQuickDofs( _start ); // Other quick way
-  world->getRobot(_robotId)->setDofs( _start, _links );
-  if( world->checkCollision() )
-    return false;
+	//world->mRobots[_robotId]->setQuickDofs( _start ); // Other quick way
+	world->getRobot(_robotId)->setDofs( _start, _links );
+	if( world->checkCollision() )
+		return false;
 
-  world->getRobot(_robotId)->setDofs( _goal, _links );
-  if( world->checkCollision() )
-    return false;
+	world->getRobot(_robotId)->setDofs( _goal, _links );
+	if( world->checkCollision() )
+		return false;
 
-  bool result;
-  if( _bidirectional ) {
-    result = planBidirectionalRrt( _robotId, _links, _start, _goal, _connect, _greedy, _maxNodes );
-  } else {
-    result = planSingleTreeRrt( _robotId, _links, _start, _goal, _connect, _greedy, _maxNodes );
-  }
+	bool result;
+	if( _bidirectional ) {
+		result = planBidirectionalRrt( _robotId, _links, _start, _goal, _connect, _greedy, _maxNodes );
+	} else {
+		result = planSingleTreeRrt( _robotId, _links, _start, _goal, _connect, _greedy, _maxNodes );
+	}
 
-  if( result && _smooth ) {
-    smoothPath( _robotId, _links, path );
-  }
+	if( result && _smooth ) {
+		smoothPath( _robotId, _links, path );
+	}
 
-  return result;
+	return result;
 }
 
 
@@ -95,76 +95,76 @@ bool PathPlanner::planPath( int _robotId,
  * @brief Finds a plan using a standard RRT
  */
 bool PathPlanner::planSingleTreeRrt( int _robotId,
-                                     const Eigen::VectorXi &_links,
-                                     const Eigen::VectorXd &_start,
-                                     const Eigen::VectorXd &_goal,
-                                     bool _connect,
-                                     bool _greedy,
-                                     unsigned int _maxNodes ) {
+																		 const Eigen::VectorXi &_links,
+																		 const Eigen::VectorXd &_start,
+																		 const Eigen::VectorXd &_goal,
+																		 bool _connect,
+																		 bool _greedy,
+																		 unsigned int _maxNodes ) {
 
-  RRT rrt( world, _robotId, _links, _start, stepSize );
-  RRT::StepResult result = RRT::STEP_PROGRESS;
+	RRT rrt( world, _robotId, _links, _start, stepSize );
+	RRT::StepResult result = RRT::STEP_PROGRESS;
 
-  double smallestGap = DBL_MAX;
+	double smallestGap = DBL_MAX;
 
-  while ( result != RRT::STEP_REACHED && smallestGap > stepSize ) {
+	while ( result != RRT::STEP_REACHED && smallestGap > stepSize ) {
 
-    /** greedy section */
-    if( _greedy ) {
+		/** greedy section */
+		if( _greedy ) {
 
-      /** greedy and connect */
-      if( _connect ) {
+			/** greedy and connect */
+			if( _connect ) {
 
-  // ================ YOUR CODE HERE ===============
+	// ================ YOUR CODE HERE ===============
 				if(randomInRange(0, 10) < 7)
 					rrt.connect();
 				else
 					rrt.connect(_goal);
-  // ===============================================
+	// ===============================================
 
-  /** greedy and NO connect */
-      } else {
+	/** greedy and NO connect */
+			} else {
 
-  // ================== YOUR CODE HERE ===================
+	// ================== YOUR CODE HERE ===================
 				if(randomInRange(0, 10) < 7)
 					rrt.tryStep();
 				else
 					rrt.tryStep(_goal);
-  // =====================================================
+	// =====================================================
 
-      }
+			}
 
-      /** NO greedy section */
-    } else {
+			/** NO greedy section */
+		} else {
 
-      /** NO greedy and Connect */
-      if( _connect ) {
-  rrt.connect();
+			/** NO greedy and Connect */
+			if( _connect ) {
+	rrt.connect();
 
-  /** No greedy and No connect -- PLAIN RRT */
-      } else {
-  rrt.tryStep();
-      }
+	/** No greedy and No connect -- PLAIN RRT */
+			} else {
+	rrt.tryStep();
+			}
 
-    }
+		}
 
-    if( _maxNodes > 0 && rrt.getSize() > _maxNodes ) {
-      printf("--(!) Exceeded maximum of %d nodes. No path found (!)--\n", _maxNodes );
-      return false;
-    }
+		if( _maxNodes > 0 && rrt.getSize() > _maxNodes ) {
+			printf("--(!) Exceeded maximum of %d nodes. No path found (!)--\n", _maxNodes );
+			return false;
+		}
 
-    double gap = rrt.getGap( _goal );
-    if( gap < smallestGap ) {
-      smallestGap = gap;
-      std::cout << "--> [planner] Gap: " << smallestGap << "  Tree size: " << rrt.configVector.size() << std::endl;
-    }
-  } // End of while
+		double gap = rrt.getGap( _goal );
+		if( gap < smallestGap ) {
+			smallestGap = gap;
+			std::cout << "--> [planner] Gap: " << smallestGap << "  Tree size: " << rrt.configVector.size() << std::endl;
+		}
+	} // End of while
 
-    /// Save path
-  printf(" --> Reached goal! : Gap: %.3f \n", rrt.getGap( _goal ) );
-  rrt.tracePath( rrt.activeNode, path, false );
+		/// Save path
+	printf(" --> Reached goal! : Gap: %.3f \n", rrt.getGap( _goal ) );
+	rrt.tracePath( rrt.activeNode, path, false );
 
-  return true;
+	return true;
 }
 
 /**
@@ -172,83 +172,83 @@ bool PathPlanner::planSingleTreeRrt( int _robotId,
  * @brief Grows 2 RRT (Start and Goal)
  */
 bool PathPlanner::planBidirectionalRrt( int _robotId,
-                                        const Eigen::VectorXi &_links,
-                                        const Eigen::VectorXd &_start,
-                                        const Eigen::VectorXd &_goal,
-										bool _connect,
-                                        bool _greedy, // no effect here
-                                        unsigned int _maxNodes ) {
+																				const Eigen::VectorXi &_links,
+																				const Eigen::VectorXd &_start,
+																				const Eigen::VectorXd &_goal,
+																				bool _connect,
+																				bool _greedy, // no effect here
+																				unsigned int _maxNodes ) {
 
-  // ============= YOUR CODE HERE ======================
-  // HINT: Remember trees grow towards each other!
+	// ============= YOUR CODE HERE ======================
+	// HINT: Remember trees grow towards each other!
 
-  RRTS rrt( world, _robotId, _links, _start, stepSize );
-  RRTG rrt( world, _robotId, _links, _goal, stepSize );
-  RRTS::StepResult result = RRTS::STEP_PROGRESS;
-  RRTG::StepResult result = RRTG::STEP_PROGRESS;
+	RRT rrts( world, _robotId, _links, _start, stepSize );
+	RRT rrtg( world, _robotId, _links, _goal, stepSize );
+	RRT::StepResult result = RRT::STEP_PROGRESS;
+	RRT::StepResult result = RRT::STEP_PROGRESS;
 
-  double smallestGap = DBL_MAX;
-  const _sg = _start;
-  const _gs = _goal;
-  while ( result != RRTS::STEP_REACHED && smallestGap > stepSize ) {
-	
+	double smallestGap = DBL_MAX;
+	const _sg = _start;
+	const _gs = _goal;
+	while ( result != RRTS::STEP_REACHED && smallestGap > stepSize ) {
+
 	/** greedy section */
 	if( _greedy ) {
 
 	/** greedy and connect */
 	if( _connect ) {
 
-  // ================ YOUR CODE HERE ===============
+	// ================ YOUR CODE HERE ===============
 				if(randomInRange(0, 10) < 7)
 					rrt.connect();
 				else
 					rrt.connect(_gs);
-  // ===============================================
+	// ===============================================
 
-  /** greedy and NO connect */
-      } else {
+	/** greedy and NO connect */
+			} else {
 
-  // ================== YOUR CODE HERE ===================
+	// ================== YOUR CODE HERE ===================
 				if(randomInRange(0, 10) < 7)
 					rrt.tryStep();
 				else
 					rrt.tryStep(_gs);
-  // =====================================================
+	// =====================================================
 
-      }
+			}
 
-      /** NO greedy section */
-    } else {
+			/** NO greedy section */
+		} else {
 
-      /** NO greedy and Connect */
-      if( _connect ) {
-  rrt.connect();
+			/** NO greedy and Connect */
+			if( _connect ) {
+	rrt.connect();
 
-  /** No greedy and No connect -- PLAIN RRT */
-      } else {
-  rrt.tryStep();
-	  }
+	/** No greedy and No connect -- PLAIN RRT */
+			} else {
+	rrt.tryStep();
+		}
 
 	}
 
-    if( _maxNodes > 0 && rrt.getSize() > _maxNodes ) {
-      printf("--(!) Exceeded maximum of %d nodes. No path found (!)--\n", _maxNodes );
-      return false;
-    }
+		if( _maxNodes > 0 && rrt.getSize() > _maxNodes ) {
+			printf("--(!) Exceeded maximum of %d nodes. No path found (!)--\n", _maxNodes );
+			return false;
+		}
 
-    double gap = rrt.getGap( _gs );
-    if( gap < smallestGap ) {
-      smallestGap = gap;
-      std::cout << "--> [planner] Gap: " << smallestGap << "  Tree size: " << rrt.configVector.size() << std::endl;
-    }
-  } // End of while
+		double gap = rrt.getGap( _gs );
+		if( gap < smallestGap ) {
+			smallestGap = gap;
+			std::cout << "--> [planner] Gap: " << smallestGap << "  Tree size: " << rrt.configVector.size() << std::endl;
+		}
+	} // End of while
 
-    /// Save path
-  printf(" --> Reached goal! : Gap: %.3f \n", rrt.getGap( _gs ) );
-  rrt.tracePath( rrt.activeNode, path, false );
+		/// Save path
+	printf(" --> Reached goal! : Gap: %.3f \n", rrt.getGap( _gs ) );
+	rrt.tracePath( rrt.activeNode, path, false );
 
-  return true;
-  // ===================================================
+	return true;
+	// ===================================================
 
 }
 
@@ -258,35 +258,35 @@ bool PathPlanner::planBidirectionalRrt( int _robotId,
  * @brief True iff collision-free
  */
 bool PathPlanner::checkPathSegment( int _robotId,
-                                    const Eigen::VectorXi &_links,
-                                    const Eigen::VectorXd &_config1,
-                                    const Eigen::VectorXd &_config2 ) const {
+																		const Eigen::VectorXi &_links,
+																		const Eigen::VectorXd &_config1,
+																		const Eigen::VectorXd &_config2 ) const {
 
-  int n = (int)((_config2 - _config1).norm() / stepSize );
+	int n = (int)((_config2 - _config1).norm() / stepSize );
 
-  for( int i = 0; i < n; i++ ) {
-    Eigen::VectorXd conf = (double)(n - i)/(double)n * _config1 + (double)(i)/(double)n * _config2;
-    world->getRobot(_robotId)->setDofs( conf, _links );
-    if( world->checkCollision() ) {
-      return false;
-    }
-  }
+	for( int i = 0; i < n; i++ ) {
+		Eigen::VectorXd conf = (double)(n - i)/(double)n * _config1 + (double)(i)/(double)n * _config2;
+		world->getRobot(_robotId)->setDofs( conf, _links );
+		if( world->checkCollision() ) {
+			return false;
+		}
+	}
 
-  return true;
+	return true;
 }
 
 /**
  * @function smoothPath
  */
 void PathPlanner::smoothPath( int _robotId,
-                              const Eigen::VectorXi &_links,
-                              std::list<Eigen::VectorXd> &_path ) {
+															const Eigen::VectorXi &_links,
+															std::list<Eigen::VectorXd> &_path ) {
 
-  // =========== YOUR CODE HERE ==================
-  // HINT: Use whatever technique you like better, first try to shorten a path and then you can try to make it smoother
+	// =========== YOUR CODE HERE ==================
+	// HINT: Use whatever technique you like better, first try to shorten a path and then you can try to make it smoother
 
-  return;
-  // ========================================
+	return;
+	// ========================================
 }
 
 
