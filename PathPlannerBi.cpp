@@ -220,7 +220,7 @@ bool PathPlanner::planBidirectionalRrt( int _robotId,
       /** NO greedy section */
     }
 
-		if( _maxNodes > 0 && rrt.getSize() > _maxNodes ) {
+		if( _maxNodes > 0 && rrtS.getSize() > _maxNodes ) {
 			printf("--(!) Exceeded maximum of %d nodes. No path found (!)--\n", _maxNodes );
 			return false;
 		}
@@ -229,31 +229,29 @@ bool PathPlanner::planBidirectionalRrt( int _robotId,
 		Eigen::VectorXd lastS = rrts.configVector.back()
 		Eigen::VectorXd lastG = rrtg.configVector.back()
 
-		int nearestS = rrts.getNearestNeighbor(lastG);
-		int nearestG = rrtg.getNearestNeighbor(lastS);
+		int nearestSIdx = rrts.getNearestNeighbor(lastG);
+		int nearestGIdx = rrtg.getNearestNeighbor(lastS);
+
+		Eigen::VectorXd nearestS = rrts.configVector[_NNIdx]
+		Eigen::VectorXd nearestG = rrtg.configVector[_NNIdx]
 
 		double gapS = rrts.getGap( nearestG );
 		double gapG = rrtg.getGap( nearestS );
 
-		if( gapS < smallestGap ) {
-			smallestGap = gap;
-			sg = lastS;
-		}
-
-		if( gap < smallestGap ) {
-			smallestGap = gap;
+		if( gapG < smallestGap ) {
+			smallestGap = gapG;
 			sg = lastS;
 			gs = lastG;
-		}
-
-		if( gap < smallestGap ) {
 			std::cout << "--> [planner] Gap: " << smallestGap << "  Tree size: " << rrt.configVector.size() << std::endl;
 		}
+
 	} // End of while
 
 		/// Save path
-	printf(" --> Reached goal! : Gap: %.3f \n", rrt.getGap( _gs ) );
-	rrt.tracePath( rrt.activeNode, path, false );
+	rrts.tryStep(gs);
+	printf(" --> Reached goal! : Gap: %.3f \n", rrts.getGap( gs ) );
+	rrts.tracePath( rrts.activeNode, path, false );
+	rrtg.tracePath( rrtg.activeNode, path, true );
 
 	return true;
 	// ===================================================

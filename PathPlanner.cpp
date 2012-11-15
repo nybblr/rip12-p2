@@ -181,6 +181,84 @@ bool PathPlanner::planBidirectionalRrt( int _robotId,
 
   // ============= YOUR CODE HERE ======================
   // HINT: Remember trees grow towards each other!
+	RRT rrts( world, _robotId, _links, _start, stepSize );
+	RRT rrtg( world, _robotId, _links, _goal, stepSize );
+	RRT::StepResult result = RRT::STEP_PROGRESS;
+
+	double smallestGap = DBL_MAX;
+	Eigen::VectorXd sg = _start;
+	Eigen::VectorXd gs = _goal;
+
+	while ( result != RRT::STEP_REACHED && (smallestGap > stepSize)) {
+
+    /** greedy section */
+    if( _greedy ) {
+
+      /** greedy and connect */
+      if( _connect ) {
+
+				if(randomInRange(0, 10) < 7)
+				{
+					rrts.connect();
+					rrtg.connect();
+				}
+				else
+				{
+					rrts.connect(gs);
+					rrtg.connect(sg);
+				}
+
+  /** greedy and NO connect */
+      } else {
+
+				if(randomInRange(0, 10) < 7)
+				{
+					rrts.tryStep();
+					rrtg.tryStep();
+				}
+				else
+				{
+					rrts.tryStep(gs);
+					rrtg.tryStep(sg);
+				}
+
+      }
+
+      /** NO greedy section */
+    }
+
+		if( _maxNodes > 0 && rrts.getSize() > _maxNodes ) {
+			printf("--(!) Exceeded maximum of %d nodes. No path found (!)--\n", _maxNodes );
+			return false;
+		}
+
+
+		Eigen::VectorXd lastS = rrts.configVector.back();
+		Eigen::VectorXd lastG = rrtg.configVector.back();
+
+		int nearestSIdx = rrts.getNearestNeighbor(lastG);
+		int nearestGIdx = rrtg.getNearestNeighbor(lastS);
+
+		Eigen::VectorXd nearestS = rrts.configVector[nearestSIdx];
+		Eigen::VectorXd nearestG = rrtg.configVector[nearestSIdx];
+
+		double gapS = rrts.getGap( nearestG );
+		double gapG = rrtg.getGap( nearestS );
+
+		if( gapG < smallestGap ) {
+			smallestGap = gapG;
+			sg = lastS;
+			gs = lastG;
+			std::cout << "--> [planner] Gap: " << smallestGap << "  Tree size: " << rrts.configVector.size()+rrtg.configVector.size() << std::endl;
+		}
+
+	} // End of while
+
+		/// Save path
+	rrts.tryStep(gs);
+	printf(" --> Reached goal! : Gap: %.3f \n", rrts.getGap( gs ) );
+	rrts.tracePath( rrts.activeNode, path, false );
+	rrtg.tracePath( rrtg.activeNode, path, true );
 
   return true;
   // ===================================================
