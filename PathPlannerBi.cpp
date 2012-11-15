@@ -186,48 +186,67 @@ bool PathPlanner::planBidirectionalRrt( int _robotId,
 	RRT rrtg( world, _robotId, _links, _goal, stepSize );
 	RRT::StepResult result = RRT::STEP_PROGRESS;
 
-	double smallestGap = DBL_MAX;
+	double smallestGapS = DBL_MAX;
+	double smallestGapG = DBL_MAX;
 	Eigen::VectorXd sg = _start;
 	Eigen::VectorXd gs = _goal;
-	while ( result != RRT::STEP_REACHED && smallestGap > stepSize ) {
+	while ( result != RRT::STEP_REACHED && (smallestGapS > stepSize || smallestGapG > stepSize)) {
 
-	/** greedy section */
-	if( _greedy ) {
+    /** greedy section */
+    if( _greedy ) {
 
-	/** greedy and connect */
-	if( _connect ) {
+      /** greedy and connect */
+      if( _connect ) {
 
-	// ================ YOUR CODE HERE ===============
 				if(randomInRange(0, 10) < 7)
-					// Eigen::VectorXd newest = rrts.configVector.back()
-
+					rrts.connect();
+					rrtg.connect();
 				else
-					rrt.connect(_gs);
-	// ===============================================
+					rrts.connect(gs);
+					rrtg.connect(sg);
 
-	/** greedy and NO connect */
-			} else {
+  /** greedy and NO connect */
+      } else {
 
-	// ================== YOUR CODE HERE ===================
 				if(randomInRange(0, 10) < 7)
-					rrt.tryStep();
+					rrts.tryStep();
+					rrtg.tryStep();
 				else
-					rrt.tryStep(_gs);
-	// =====================================================
+					rrts.tryStep(gs);
+					rrtg.tryStep(sg);
 
-			}
+      }
 
-		}
-	}
+      /** NO greedy section */
+    }
 
 		if( _maxNodes > 0 && rrt.getSize() > _maxNodes ) {
 			printf("--(!) Exceeded maximum of %d nodes. No path found (!)--\n", _maxNodes );
 			return false;
 		}
 
-		double gap = rrt.getGap( _gs );
+
+		Eigen::VectorXd lastS = rrts.configVector.back()
+		Eigen::VectorXd lastG = rrtg.configVector.back()
+
+		int nearestS = rrts.getNearestNeighbor(lastG);
+		int nearestG = rrtg.getNearestNeighbor(lastS);
+
+		double gapS = rrts.getGap( nearestG );
+		double gapG = rrtg.getGap( nearestS );
+
+		if( gapS < smallestGap ) {
+			smallestGap = gap;
+			sg = lastS;
+		}
+
 		if( gap < smallestGap ) {
 			smallestGap = gap;
+			sg = lastS;
+			gs = lastG;
+		}
+
+		if( gap < smallestGap ) {
 			std::cout << "--> [planner] Gap: " << smallestGap << "  Tree size: " << rrt.configVector.size() << std::endl;
 		}
 	} // End of while
