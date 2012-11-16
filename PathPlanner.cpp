@@ -204,8 +204,8 @@ bool PathPlanner::planBidirectionalRrt( int _robotId,
 				}
 				else
 				{
-					rrts.connect(gs);
-					rrtg.connect(sg);
+					rrts.connect(rrtg.configVector[rrtg.activeNode]);
+					rrtg.connect(rrts.configVector[rrts.activeNode]);
 				}
 
   /** greedy and NO connect */
@@ -218,8 +218,8 @@ bool PathPlanner::planBidirectionalRrt( int _robotId,
 				}
 				else
 				{
-					rrts.tryStep(gs);
-					rrtg.tryStep(sg);
+					rrts.tryStep(rrtg.configVector[rrtg.activeNode]);
+					rrtg.tryStep(rrts.configVector[rrts.activeNode]);
 				}
 
       }
@@ -240,23 +240,25 @@ bool PathPlanner::planBidirectionalRrt( int _robotId,
 		int nearestGIdx = rrtg.getNearestNeighbor(lastS);
 
 		Eigen::VectorXd nearestS = rrts.configVector[nearestSIdx];
-		Eigen::VectorXd nearestG = rrtg.configVector[nearestSIdx];
+		Eigen::VectorXd nearestG = rrtg.configVector[nearestGIdx];
 
 		double gapS = rrts.getGap( nearestG );
 		double gapG = rrtg.getGap( nearestS );
 
 		if( gapG < smallestGap ) {
 			smallestGap = gapG;
-			sg = lastS;
-			gs = lastG;
-			std::cout << "--> [planner] Gap: " << smallestGap << "  Tree size: " << rrts.configVector.size()+rrtg.configVector.size() << std::endl;
+			std::cout << "--> [planner] Gap: " << smallestGap << "  Tree size: " << (rrts.configVector.size()+rrtg.configVector.size()) << std::endl;
+		}
+
+		if( gapS < smallestGap ) {
+			smallestGap = gapS;
+			std::cout << "--> [planner] Gap: " << smallestGap << "  Tree size: " << (rrts.configVector.size()+rrtg.configVector.size()) << std::endl;
 		}
 
 	} // End of while
 
 		/// Save path
-	rrts.tryStep(gs);
-	printf(" --> Reached goal! : Gap: %.3f \n", rrts.getGap( gs ) );
+	printf(" --> Reached goal! : Gap: %.3f \n", smallestGap );
 	rrts.tracePath( rrts.activeNode, path, false );
 	rrtg.tracePath( rrtg.activeNode, path, true );
 
