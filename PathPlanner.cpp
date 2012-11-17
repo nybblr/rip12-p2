@@ -325,11 +325,37 @@ void PathPlanner::smoothPath( int _robotId,
 			IDb = IDt;
 		}
 
-		Eigen::VectorXd nodeA = _path[IDa];
-		Eigen::VectorXd nodeB = _path[IDb];
+		std::list<Eigen::VectorXd>::iterator nodeAit = std::next(_path.begin(), IDa);
+		Eigen::VectorXd nodeA = *nodeAit;
+		std::list<Eigen::VectorXd>::iterator nodeBit = std::next(_path.begin(), IDb);
+		Eigen::VectorXd nodeB = *nodeBit;
 
 		if( checkPathSegment(_robotId, _links, nodeA, nodeB) ) {
 			// Collision free!
+			// First, remove in between nodes
+			std::advance(nodeAit, 1);
+			_path.erase(nodeAit, nodeBit);
+
+			Eigen::VectorXd start = nodeA;
+			Eigen::VectorXd end = nodeB;
+
+			// Now insert straight line nodes
+			while( true ) {
+				// Compute direction and magnitude
+				Eigen::VectorXd diff = end - start;
+				double dist = diff.norm();
+
+				if( dist < stepSize )
+					break;
+
+				// Scale this vector to stepSize and add to end of start
+				Eigen::VectorXd qnew = start + diff*(stepSize/dist);
+				_path.insert(nodeAit, qnew);
+
+				// Increment "counter"
+				start = qnew;
+				std::advance(nodeAit, 1);
+			}
 		}
 	}
 
