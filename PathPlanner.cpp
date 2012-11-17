@@ -306,6 +306,65 @@ void PathPlanner::smoothPath( int _robotId,
   // =========== YOUR CODE HERE ==================
   // HINT: Use whatever technique you like better, first try to shorten a path and then you can try to make it smoother
 
+	const int MAX_TRIES = 5000;
+	// Strategy: randomly pick a pair of nodes (within some distance threshold) and try to connect them
+	// If there is no collision, then replace all in between nodes with a straight line.
+
+	for( int i = 0; i < MAX_TRIES; i++ ) {
+		// First: get random nodes in some distance range
+		int IDa = 0;
+		int IDb = 0;
+		while( true ) {
+			IDa = randomInRange(0, _path.size() - 1);
+			IDb = randomInRange(0, _path.size() - 1);
+
+			int IDd = abs(IDa - IDb);
+			if( IDd > 3 && IDd < 250 )
+				break;
+		}
+
+		// Ensure IDa < IDb
+		if( IDa > IDb ) {
+			// Swap
+			int IDt = IDa;
+			IDa = IDb;
+			IDb = IDt;
+		}
+
+		std::list<Eigen::VectorXd>::iterator nodeAit = std::next(_path.begin(), IDa);
+		Eigen::VectorXd nodeA = *nodeAit;
+		std::list<Eigen::VectorXd>::iterator nodeBit = std::next(_path.begin(), IDb);
+		Eigen::VectorXd nodeB = *nodeBit;
+
+		if( checkPathSegment(_robotId, _links, nodeA, nodeB) ) {
+			// Collision free!
+			// First, remove in between nodes
+			std::advance(nodeAit, 1);
+			_path.erase(nodeAit, nodeBit);
+
+			Eigen::VectorXd start = nodeA;
+			Eigen::VectorXd end = nodeB;
+
+			// Now insert straight line nodes
+			while( true ) {
+				// Compute direction and magnitude
+				Eigen::VectorXd diff = end - start;
+				double dist = diff.norm();
+
+				if( dist < stepSize )
+					break;
+
+				// Scale this vector to stepSize and add to end of start
+				Eigen::VectorXd qnew = start + diff*(stepSize/dist);
+				_path.insert(nodeAit, qnew);
+
+				// Increment "counter"
+				start = qnew;
+				std::advance(nodeAit, 1);
+			}
+		}
+	}
+
   return;
   // ========================================
 }
