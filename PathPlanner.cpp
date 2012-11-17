@@ -116,17 +116,23 @@ bool PathPlanner::planSingleTreeRrt( int _robotId,
       if( _connect ) {
 
   // ================ YOUR CODE HERE ===============
-				if(randomInRange(0, 10) < 7)
+				if(randomInRange(0, 100) < 65)
+				{
 					rrt.connect();
+					printf("Toward random \n");
+				}
 				else
+				{
+					printf("Toward goal \n");
 					rrt.connect(_goal);
+				}
   // ===============================================
 
   /** greedy and NO connect */
       } else {
 
   // ================== YOUR CODE HERE ===================
-				if(randomInRange(0, 10) < 7)
+				if(randomInRange(0, 100) < 65)
 					rrt.tryStep();
 				else
 					rrt.tryStep(_goal);
