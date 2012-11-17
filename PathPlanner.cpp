@@ -105,6 +105,8 @@ bool PathPlanner::planSingleTreeRrt( int _robotId,
   RRT rrt( world, _robotId, _links, _start, stepSize );
   RRT::StepResult result = RRT::STEP_PROGRESS;
 
+  int randomCount = 0;
+  int goalCount = 0;
   double smallestGap = DBL_MAX;
 
   while ( result != RRT::STEP_REACHED && smallestGap > stepSize ) {
@@ -119,11 +121,11 @@ bool PathPlanner::planSingleTreeRrt( int _robotId,
 				if(randomInRange(0, 100) < 65)
 				{
 					rrt.connect();
-					printf("Toward random \n");
+					randomCount++;
 				}
 				else
 				{
-					printf("Toward goal \n");
+					goalCount++;
 					rrt.connect(_goal);
 				}
   // ===============================================
@@ -133,9 +135,15 @@ bool PathPlanner::planSingleTreeRrt( int _robotId,
 
   // ================== YOUR CODE HERE ===================
 				if(randomInRange(0, 100) < 65)
+				{
 					rrt.tryStep();
+					randomCount++;
+				}
 				else
+				{
 					rrt.tryStep(_goal);
+					goalCount++;
+				}
   // =====================================================
 
       }
@@ -156,6 +164,8 @@ bool PathPlanner::planSingleTreeRrt( int _robotId,
 
     if( _maxNodes > 0 && rrt.getSize() > _maxNodes ) {
       printf("--(!) Exceeded maximum of %d nodes. No path found (!)--\n", _maxNodes );
+	  printf("--(!) Random Count: %d \n", randomCount );
+	  printf("--(!) Goal Count: %d \n", goalCount );
       return false;
     }
 
@@ -168,6 +178,8 @@ bool PathPlanner::planSingleTreeRrt( int _robotId,
 
     /// Save path
   printf(" --> Reached goal! : Gap: %.3f \n", rrt.getGap( _goal ) );
+  printf("--(!) Random Count: %d \n", randomCount );
+  printf("--(!) Goal Count: %d \n", goalCount );
   rrt.tracePath( rrt.activeNode, path, false );
 
   return true;

@@ -63,12 +63,16 @@ bool RRT::connect() {
  * @brief Connect the closest node with _target, stop until it is reached or until it collides
  */
 bool RRT::connect( const Eigen::VectorXd &_target ) {
+int NNIdx = 0;
+  if(randomInRange(0, 100) < 65)
+	 NNIdx = getNearestNeighbor( _target );
+  else
+	 NNIdx = activeNode;
 
-  int NNIdx = getNearestNeighbor( _target );
   StepResult result = STEP_PROGRESS;
   int i = 0;
   while( result == STEP_PROGRESS ) {
-
+	
     result = tryStepFromNode( _target, NNIdx );
     NNIdx = configVector.size() -1;
     i++;
@@ -91,7 +95,11 @@ RRT::StepResult RRT::tryStep() {
  * @brief Try to advance one stepSize towards _qtry
  */
 RRT::StepResult RRT::tryStep( const Eigen::VectorXd &_qtry ) {
-  int NNIdx = getNearestNeighbor( _qtry );
+int NNIdx = 0;
+  if(randomInRange(0, 100) < 65)
+	  NNIdx = getNearestNeighbor( _qtry );
+  else
+	  NNIdx = activeNode;
   return tryStepFromNode( _qtry, NNIdx );
 }
 
