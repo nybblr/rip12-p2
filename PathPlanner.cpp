@@ -300,6 +300,39 @@ void PathPlanner::smoothPath( int _robotId,
   // =========== YOUR CODE HERE ==================
   // HINT: Use whatever technique you like better, first try to shorten a path and then you can try to make it smoother
 
+	const int MAX_TRIES = 5000;
+	// Strategy: randomly pick a pair of nodes (within some distance threshold) and try to connect them
+	// If there is no collision, then replace all in between nodes with a straight line.
+
+	for( int i = 0; i < MAX_TRIES; i++ ) {
+		// First: get random nodes in some distance range
+		int IDa = 0;
+		int IDb = 0;
+		while( true ) {
+			IDa = randomInRange(0, _path.size() - 1);
+			IDb = randomInRange(0, _path.size() - 1);
+
+			int IDd = abs(IDa - IDb);
+			if( IDd > 3 && IDd < 250 )
+				break;
+		}
+
+		// Ensure IDa < IDb
+		if( IDa > IDb ) {
+			// Swap
+			int IDt = IDa;
+			IDa = IDb;
+			IDb = IDt;
+		}
+
+		Eigen::VectorXd nodeA = _path[IDa];
+		Eigen::VectorXd nodeB = _path[IDb];
+
+		if( checkPathSegment(_robotId, _links, nodeA, nodeB) ) {
+			// Collision free!
+		}
+	}
+
   return;
   // ========================================
 }
