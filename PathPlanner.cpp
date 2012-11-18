@@ -204,6 +204,8 @@ bool PathPlanner::planBidirectionalRrt( int _robotId,
 	RRT::StepResult result = RRT::STEP_PROGRESS;
 
 	double smallestGap = DBL_MAX;
+	int randomCount = 0;
+    int goalCount = 0;
 	Eigen::VectorXd sg = _start;
 	Eigen::VectorXd gs = _goal;
 
@@ -219,11 +221,13 @@ bool PathPlanner::planBidirectionalRrt( int _robotId,
 				{
 					rrts.connect();
 					rrtg.connect();
+					randomCount++;
 				}
 				else
 				{
 					rrts.connect(rrtg.configVector[rrtg.activeNode]);
 					rrtg.connect(rrts.configVector[rrts.activeNode]);
+					goalCount++;
 				}
 
   /** greedy and NO connect */
@@ -233,11 +237,13 @@ bool PathPlanner::planBidirectionalRrt( int _robotId,
 				{
 					rrts.tryStep();
 					rrtg.tryStep();
+					randomCount++;
 				}
 				else
 				{
 					rrts.tryStep(rrtg.configVector[rrtg.activeNode]);
 					rrtg.tryStep(rrts.configVector[rrts.activeNode]);
+					goalCount++;
 				}
 
       }
@@ -247,6 +253,8 @@ bool PathPlanner::planBidirectionalRrt( int _robotId,
 
 		if( _maxNodes > 0 && rrts.getSize() > _maxNodes ) {
 			printf("--(!) Exceeded maximum of %d nodes. No path found (!)--\n", _maxNodes );
+			printf("--(!) Random Count: %d \n", randomCount );
+            printf("--(!) Goal Count: %d \n", goalCount );
 			return false;
 		}
 
@@ -277,6 +285,8 @@ bool PathPlanner::planBidirectionalRrt( int _robotId,
 
 		/// Save path
 	printf(" --> Reached goal! : Gap: %.3f \n", smallestGap );
+	printf("--(!) Random Count: %d \n", randomCount );
+    printf("--(!) Goal Count: %d \n", goalCount );
 	rrts.tracePath( rrts.activeNode, path, false );
 	rrtg.tracePath( rrtg.activeNode, path, true );
 
