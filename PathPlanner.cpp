@@ -328,12 +328,14 @@ void PathPlanner::smoothPath( int _robotId,
   // =========== YOUR CODE HERE ==================
   // HINT: Use whatever technique you like better, first try to shorten a path and then you can try to make it smoother
 
-	const int MAX_TRIES = 1000;
+	bool clear = checkPathSegment(_robotId, _links, _path.front(), _path.back());
+	std::cout << "Start: " << _path.front() << " End: " << _path.back() << std::endl;
+	printf("Path clear? %s\n", clear ? "true" : "false");
+	const int MAX_TRIES = 100;
 	// Strategy: randomly pick a pair of nodes (within some distance threshold) and try to connect them
 	// If there is no collision, then replace all in between nodes with a straight line.
 
 	for( int i = 0; i < MAX_TRIES; i++ ) {
-		printf("Random pair try %d\n", i);
 		// First: get random nodes in some distance range
 		int IDa = 0;
 		int IDb = 0;
@@ -354,21 +356,22 @@ void PathPlanner::smoothPath( int _robotId,
 			IDb = IDt;
 		}
 
-		printf("Random pair: %d %d\n", IDa, IDb);
-
 		std::list<Eigen::VectorXd>::iterator nodeAit = std::next(_path.begin(), IDa);
 		Eigen::VectorXd nodeA = *nodeAit;
 		std::list<Eigen::VectorXd>::iterator nodeBit = std::next(_path.begin(), IDb);
 		Eigen::VectorXd nodeB = *nodeBit;
 
-		if( checkPathSegment(_robotId, _links, nodeA, nodeB) ) {
-			// printf("Collision free!\n");
+		printf("Random pair %d of %d: %d %d\n", i, MAX_TRIES, IDa, IDb);
+
+		printf("Current size: %d\n", _path.size());
+		clear = checkPathSegment(_robotId, _links, nodeA, nodeB);
+		printf("Path clear? %s\n", clear ? "true" : "false");
+
+		if( clear ) {
 			// Collision free!
 			// First, remove in between nodes
 			std::advance(nodeAit, 1);
-			// printf("Advanced with no issue!\n");
 			_path.erase(nodeAit, nodeBit);
-			// printf("Erased with no issue!\n");
 
 			Eigen::VectorXd start = nodeA;
 			Eigen::VectorXd end = nodeB;
@@ -390,6 +393,9 @@ void PathPlanner::smoothPath( int _robotId,
 				// Increment "counter"
 				start = qnew;
 			}
+			printf("New size: %d\n", _path.size());
+		} else {
+			printf("Collision.\n");
 		}
 	}
 
