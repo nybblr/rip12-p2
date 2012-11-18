@@ -286,7 +286,7 @@ bool PathPlanner::planBidirectionalRrt( int _robotId,
 		/// Save path
 	printf(" --> Reached goal! : Gap: %.3f \n", smallestGap );
 	printf("--(!) Random Count: %d \n", randomCount );
-    printf("--(!) Goal Count: %d \n", goalCount );
+	printf("--(!) Goal Count: %d \n", goalCount );
 	rrts.tracePath( rrts.activeNode, path, false );
 	rrtg.tracePath( rrtg.activeNode, path, true );
 
@@ -310,6 +310,7 @@ bool PathPlanner::checkPathSegment( int _robotId,
   for( int i = 0; i < n; i++ ) {
     Eigen::VectorXd conf = (double)(n - i)/(double)n * _config1 + (double)(i)/(double)n * _config2;
     world->getRobot(_robotId)->setDofs( conf, _links );
+		world->getRobot(_robotId)->update();
     if( world->checkCollision() ) {
       return false;
     }
@@ -328,10 +329,7 @@ void PathPlanner::smoothPath( int _robotId,
   // =========== YOUR CODE HERE ==================
   // HINT: Use whatever technique you like better, first try to shorten a path and then you can try to make it smoother
 
-	bool clear = checkPathSegment(_robotId, _links, _path.front(), _path.back());
-	std::cout << "Start: " << _path.front() << " End: " << _path.back() << std::endl;
-	printf("Path clear? %s\n", clear ? "true" : "false");
-	const int MAX_TRIES = 100;
+	const int MAX_TRIES = 500;
 	// Strategy: randomly pick a pair of nodes (within some distance threshold) and try to connect them
 	// If there is no collision, then replace all in between nodes with a straight line.
 
@@ -361,11 +359,9 @@ void PathPlanner::smoothPath( int _robotId,
 		std::list<Eigen::VectorXd>::iterator nodeBit = std::next(_path.begin(), IDb);
 		Eigen::VectorXd nodeB = *nodeBit;
 
-		printf("Random pair %d of %d: %d %d\n", i, MAX_TRIES, IDa, IDb);
+		printf("Random pair %d of %d: %d %d; path size: %d\n", i, MAX_TRIES, IDa, IDb, _path.size());
 
-		printf("Current size: %d\n", _path.size());
-		clear = checkPathSegment(_robotId, _links, nodeA, nodeB);
-		printf("Path clear? %s\n", clear ? "true" : "false");
+		bool clear = checkPathSegment(_robotId, _links, nodeA, nodeB);
 
 		if( clear ) {
 			// Collision free!
@@ -393,7 +389,6 @@ void PathPlanner::smoothPath( int _robotId,
 				// Increment "counter"
 				start = qnew;
 			}
-			printf("New size: %d\n", _path.size());
 		} else {
 			printf("Collision.\n");
 		}
