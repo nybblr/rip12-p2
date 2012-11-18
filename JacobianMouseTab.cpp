@@ -13,6 +13,8 @@
 #include <GUI/GUI.h>
 #include <GUI/GRIPSlider.h>
 #include <GUI/GRIPFrame.h>
+#include <Tabs/GRIPTab.h>
+#include <GRIPApp.h>
 
 #include <kinematics/Joint.h>
 #include <kinematics/Dof.h>
@@ -30,7 +32,8 @@ enum JacobianMouseTabEvents {
 	button_Show_Start,
 	button_Show_Goal,
 	button_Check_Collision,
-	button_Run
+	button_Run,
+	checkbox_ContinueRunning
 };
 
 // sizer for whole tab
@@ -40,6 +43,7 @@ wxBoxSizer* sizerFullJacobian;
 BEGIN_EVENT_TABLE(JacobianMouseTab, wxPanel)
 EVT_COMMAND (wxID_ANY, wxEVT_COMMAND_BUTTON_CLICKED, JacobianMouseTab::OnButton)
 EVT_COMMAND (wxID_ANY, wxEVT_GRIP_SLIDER_CHANGE, JacobianMouseTab::OnSlider)
+EVT_COMMAND (wxID_ANY, wxEVT_COMMAND_CHECKBOX_CLICKED, JacobianMouseTab::OnCheckBox)
 END_EVENT_TABLE()
 
 // Class constructor for the tab: Each tab will be a subclass of RSTTab
@@ -54,6 +58,7 @@ JacobianMouseTab::JacobianMouseTab( wxWindow *parent, const wxWindowID id,
 GRIPTab(parent, id, pos, size, style) {
 
   mRobotId = 0;
+  mContinueRunning = false;
 
   sizerFullJacobian = new wxBoxSizer( wxHORIZONTAL );
 
@@ -137,6 +142,7 @@ GRIPTab(parent, id, pos, size, style) {
 		      wxALL, 1 );
     runBoxSizer->Add( new wxButton(this, button_Run, wxT("Run")),
 		      0, wxALL, 1 );
+    runBoxSizer->Add( new wxCheckBox(this, checkbox_ContinueRunning, _T("Keep running (live update mode)")), 1, wxALL, 0);
 
 
     // Add col1Sizer to the configuration box
@@ -185,6 +191,17 @@ void JacobianMouseTab::printLinks() {
     printf(" %d ", mLinks[i] );
   }
   printf("\n");
+}
+
+void JacobianMouseTab::OnCheckBox( wxCommandEvent &evt) {
+  int checkbox_num = evt.GetId();
+
+  switch (checkbox_num) {
+  case checkbox_ContinueRunning:
+    mContinueRunning = (bool)evt.GetSelection();
+    std::cout << "(i) ContinueRunning = " << mContinueRunning << std::endl;
+    break;
+  }
 }
 
 
@@ -260,75 +277,100 @@ void JacobianMouseTab::OnButton(wxCommandEvent &evt) {
 
     /** Set goal */
   case button_Set_Goal:
-    {
-      if( mWorld != NULL ) {
-	if( mWorld->getNumRobots() < 1 )
-	  {  printf("(x) No robot in the loaded world! \n"); break; }
+    if( mWorld != NULL ) {
+      if( mWorld->getNumRobots() < 1 )
+	{  printf("(x) No robot in the loaded world! \n"); break; }
 
-	double x; double y; double z;
-        mTargetX_Text->GetValue().ToDouble(&x);
-	mTargetY_Text->GetValue().ToDouble(&y);
-	mTargetZ_Text->GetValue().ToDouble(&z);
+      double x; double y; double z;
+      mTargetX_Text->GetValue().ToDouble(&x);
+      mTargetY_Text->GetValue().ToDouble(&y);
+      mTargetZ_Text->GetValue().ToDouble(&z);
 
-	mTargetXYZ.resize(3);
-	//mTargetXYZ << x, y, z;
+      mTargetXYZ.resize(3);
+      //mTargetXYZ << x, y, z;
+      Open3DMouse();
+      Eigen::VectorXd cal(3); cal << 1,1,1;
+      mTargetXYZ = Get3DMouse(cal);
+      Close3DMouse();
+      printf("** Goal: (%f %f %f) \n", mTargetXYZ(0), mTargetXYZ(1), mTargetXYZ(2) );
+    }
+    else
+      { printf("(x) No world loaded, I cannot set a goal \n"); }
+    break;
+
+    /** Show Goal */
+  case button_Show_Goal:
+    if( mTargetXYZ.size() !=  3 ){
+      std::cout << "(x) First, set a goal position" << std::endl;
+      break;
+    }
+    printf("** Goal: (%f %f %f) \n", mTargetXYZ(0), mTargetXYZ(1), mTargetXYZ(2) );
+
+    break;
+
+    /** Check Collisions  */
+  case button_Check_Collision:
+    std::cout << "(0) Checking Collisions" << std::endl;
+    bool st;
+    st = mWorld->checkCollision();
+    if( st == true )
+      { printf("Collisions \n"); }
+    else
+      { printf("No Collisions \n"); }
+
+    break;
+
+
+    /** Run */
+  case button_Run:
+    int num_loops = 0;
+    if ( mContinueRunning ){
+      num_loops = 10;
+    }
+    do{
+      if ( mContinueRunning ) {
 	Open3DMouse();
 	Eigen::VectorXd cal(3); cal << 1,1,1;
 	mTargetXYZ = Get3DMouse(cal);
 	Close3DMouse();
 	printf("** Goal: (%f %f %f) \n", mTargetXYZ(0), mTargetXYZ(1), mTargetXYZ(2) );
       }
-    else
-      { printf("(x) No world loaded, I cannot set a goal \n"); }
-  }
-  break;
 
-  /** Show Goal */
- case button_Show_Goal:
-   if( mTargetXYZ.size() !=  3 ){
-     std::cout << "(x) First, set a goal position" << std::endl;
-     break;
-   }
-   printf("** Goal: (%f %f %f) \n", mTargetXYZ(0), mTargetXYZ(1), mTargetXYZ(2) );
-
-   break;
-
-   /** Check Collisions  */
- case button_Check_Collision:
-   {
-     std::cout << "(0) Checking Collisions" << std::endl;
-     bool st;
-     st = mWorld->checkCollision();
-     if( st == true )
-	{ printf("Collisions \n"); }
-     else
-       { printf("No Collisions \n"); }
-   }
-   break;
-
-
-   /** Run */
- case button_Run:
-   {
       printf("Run JT Following \n");
       JTFollower *jt = new JTFollower(*mWorld);
       jt->init( mRobotId, mLinks, mEEName, mEEId, 0.02 );
 
+      PathPlanner *pp = new PathPlanner (*mWorld, false, 0.02);
+
       std::vector<Eigen::VectorXd> wsPath;
       Eigen::VectorXd start = mStartConfig;
-      if( jt->GoToXYZ( start,
-		       mTargetXYZ,
-		       wsPath ) == true ) {
-	printf("Found solution JT! \n");
-	SetTimeline( wsPath );
+       
+      if( mContinueRunning ) {
+	Eigen::VectorXd current = mWorld->getRobot(mRobotId)->getDofs( mLinks );
+	if( jt->GoToXYZ( current, mTargetXYZ, wsPath ) == true){	
+	  printf("Found solution JT! Adding to timeline\n");
+	  SetTimeline( wsPath, false);
+	}
+	else{
+	  printf("NO Found solution JT! Plotting anyway \n");
+	  SetTimeline( wsPath ,false);
+	}
       }
       else{
-	printf("NO Found solution JT! Plotting anyway \n");
-	SetTimeline( wsPath );
+	if( jt->GoToXYZ( start, mTargetXYZ, wsPath ) == true){	
+	  printf("Found solution JT! \n");
+	  SetTimeline( wsPath ,true);
 	}
-    }
+	else{
+	  printf("NO Found solution JT! Plotting anyway \n");
+	  SetTimeline( wsPath ,true);
+	}
+      }
+      
+    } while ( --num_loops >= 0 );
+    
     break;
-
+    
   } // end switch
 }
 
@@ -336,7 +378,7 @@ void JacobianMouseTab::OnButton(wxCommandEvent &evt) {
  * @function setTimeLine
  * @brief
  */
-void JacobianMouseTab::SetTimeline( std::list< Eigen::VectorXd > _path ) {
+	void JacobianMouseTab::SetTimeline( std::list< Eigen::VectorXd > _path , bool resetPath) {
 
   if( mWorld == NULL  ) {
     printf("--(!) Must create a valid plan before updating its duration (!)--");
@@ -349,7 +391,8 @@ void JacobianMouseTab::SetTimeline( std::list< Eigen::VectorXd > _path ) {
 
   printf( "** Ready to see Plan: Updated Timeline - Increment: %f, Total T: %f  Steps: %d \n", increment, T, numsteps);
 
-  frame->InitTimer( string("RRT_Plan"),increment );
+  if(resetPath)
+    frame->InitTimer( string("RRT_Plan"),increment );
   Eigen::VectorXd vals( mLinks.size() );
 
   for( std::list<Eigen::VectorXd>::iterator it = _path.begin(); it != _path.end(); it++ ) {
@@ -364,7 +407,7 @@ void JacobianMouseTab::SetTimeline( std::list< Eigen::VectorXd > _path ) {
  * @function setTimeLine
  * @brief
  */
-void JacobianMouseTab::SetTimeline( std::vector< Eigen::VectorXd > _path ) {
+ void JacobianMouseTab::SetTimeline( std::vector< Eigen::VectorXd > _path, bool resetPath) {
 
   if( mWorld == NULL  ) {
     printf("--(!) Must create a valid plan before updating its duration (!)--");
@@ -377,7 +420,8 @@ void JacobianMouseTab::SetTimeline( std::vector< Eigen::VectorXd > _path ) {
 
   printf( "** Ready to see Plan: Updated Timeline - Increment: %f, Total T: %f  Steps: %d \n", increment, T, numsteps);
 
-  frame->InitTimer( string("Plan"),increment );
+  if(resetPath)
+    frame->InitTimer( string("Plan"),increment );
   Eigen::VectorXd vals( mLinks.size() );
 
   for( int i = 0; i < _path.size(); i++ ) {

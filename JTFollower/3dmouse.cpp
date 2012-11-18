@@ -35,14 +35,14 @@ int main(void)
 	while(spnav_wait_event(&sev)) {
 
 	  if(sev.type == SPNAV_EVENT_MOTION) {
-	    printf("got motion event: t(%d, %d, %d) ", sev.motion.x, sev.motion.y, sev.motion.z);
-	    printf("r(%d, %d, %d)\n", sev.motion.rx, sev.motion.ry, sev.motion.rz);
+	    printf("%d|%d|%d\n", sev.motion.x, sev.motion.y, sev.motion.z);
+	    //printf("r(%d, %d, %d)\n", sev.motion.rx, sev.motion.ry, sev.motion.rz);
 
-	    mouse_translation << sev.motion.x, sev.motion.y, sev.motion.z; // make the vector
+	    //mouse_translation << sev.motion.x, sev.motion.y, sev.motion.z; // make the vector
 
-	    std::cout << mouse_translation.cwiseQuotient(mouse_calibration) << std::endl;
+	    //std::cout << mouse_translation.cwiseQuotient(mouse_calibration) << std::endl;
 	  } else {	/* SPNAV_EVENT_BUTTON */
-	    printf("got button %s event b(%d)\n", sev.button.press ? "press" : "release", sev.button.bnum);
+	    //printf("got button %s event b(%d)\n", sev.button.press ? "press" : "release", sev.button.bnum);
 	  }
 	}
 

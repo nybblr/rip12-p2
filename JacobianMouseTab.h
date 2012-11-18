@@ -18,6 +18,8 @@
 #include <iostream>
 #include <list>
 
+#include "PathPlanner.h"
+
 /**
  * @class TutorialTab
  * @brief Implements simulations for Hubo
@@ -34,6 +36,8 @@ public:
   int mEEId;
   int mRobotId;
   std::string mEEName;
+
+  bool mContinueRunning;
 
   // RRT & JT
   Eigen::VectorXd mStartHardcode;
@@ -68,10 +72,10 @@ public:
   // GUI functions
   void OnButton(wxCommandEvent &evt );
   void OnSlider(wxCommandEvent &evt);
-  void SetTimeline( std::list< Eigen::VectorXd > _path );
-  void SetTimeline( std::vector< Eigen::VectorXd > _path );
+  void SetTimeline( std::list< Eigen::VectorXd > _path , bool resetPath);
+  void SetTimeline( std::vector< Eigen::VectorXd > _path, bool resetPath);
   void GRIPStateChange();
-
+  void OnCheckBox( wxCommandEvent &evt);
 
     // Thread specific
     // GRIPThread* thread;
