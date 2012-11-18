@@ -1,0 +1,75 @@
+##### ROBOTS #####
+
+##### ROBOT 1 #####
+
+> 	ROBOT SchunkArm 
+> 	POSITION -0.132 1.316 0.721
+> 	ORIENTATION -89.9544 89.9544 -3.99403e-12
+
+##### INITIAL ANGLES #####
+
+> 	INIT L1 0
+> 	INIT L2 -1.03089
+> 	INIT L3 0
+> 	INIT L4 -0.773163
+> 	INIT L5 0
+> 	INIT L6 0
+> 	INIT FT 0
+> 	INIT F11 0
+> 	INIT F12 0
+> 	INIT F13 0
+> 	INIT F21 0
+> 	INIT F22 0
+> 	INIT F23 0
+> 	INIT F31 0
+> 	INIT F32 0
+> 	INIT F33 0
+
+##### OBJECTS #####
+
+##### OBJECT 1 #####
+
+> 	OBJECT table2b 
+> 	POSITION -1.14 0.789 0
+> 	ORIENTATION 89.9544 -0 0
+
+##### OBJECT 2 #####
+
+> 	OBJECT luggage3 
+> 	POSITION -0.848 1.14 0.721
+> 	ORIENTATION 89.9544 -3.18055e-15 89.9544
+
+##### OBJECT 3 #####
+
+> 	OBJECT book 
+> 	POSITION 0.789 1.102 0.73
+> 	ORIENTATION 89.9544 -0 0
+
+##### OBJECT 4 #####
+
+> 	OBJECT lamp3 
+> 	POSITION 0.395 1.3 0.65
+> 	ORIENTATION 89.9544 -0 68.7549
+
+##### OBJECT 5 #####
+
+> 	OBJECT polarbear1 
+> 	POSITION -1.608 1.328 0.416
+> 	ORIENTATION 89.9544 -0 80.2141
+
+##### OBJECT 6 #####
+
+> 	OBJECT polarbear2 
+> 	POSITION 2 1.188 0.416
+> 	ORIENTATION 89.9544 -0 49.8473
+
+##### SCENE INFO
+
+> CAMERA
+ROT 0 -30 0
+WRT 0 0 0
+RAD 9.28
+
+> COLORS
+BACK 0 0 0
+GRID 0.5 0.5 0
