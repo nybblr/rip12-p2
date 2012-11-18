@@ -204,6 +204,8 @@ bool PathPlanner::planBidirectionalRrt( int _robotId,
 	RRT::StepResult result = RRT::STEP_PROGRESS;
 
 	double smallestGap = DBL_MAX;
+	int randomCount = 0;
+    int goalCount = 0;
 	Eigen::VectorXd sg = _start;
 	Eigen::VectorXd gs = _goal;
 
@@ -219,11 +221,13 @@ bool PathPlanner::planBidirectionalRrt( int _robotId,
 				{
 					rrts.connect();
 					rrtg.connect();
+					randomCount++;
 				}
 				else
 				{
 					rrts.connect(rrtg.configVector[rrtg.activeNode]);
 					rrtg.connect(rrts.configVector[rrts.activeNode]);
+					goalCount++;
 				}
 
   /** greedy and NO connect */
@@ -233,11 +237,13 @@ bool PathPlanner::planBidirectionalRrt( int _robotId,
 				{
 					rrts.tryStep();
 					rrtg.tryStep();
+					randomCount++;
 				}
 				else
 				{
 					rrts.tryStep(rrtg.configVector[rrtg.activeNode]);
 					rrtg.tryStep(rrts.configVector[rrts.activeNode]);
+					goalCount++;
 				}
 
       }
@@ -247,6 +253,8 @@ bool PathPlanner::planBidirectionalRrt( int _robotId,
 
 		if( _maxNodes > 0 && rrts.getSize() > _maxNodes ) {
 			printf("--(!) Exceeded maximum of %d nodes. No path found (!)--\n", _maxNodes );
+			printf("--(!) Random Count: %d \n", randomCount );
+            printf("--(!) Goal Count: %d \n", goalCount );
 			return false;
 		}
 
@@ -277,6 +285,8 @@ bool PathPlanner::planBidirectionalRrt( int _robotId,
 
 		/// Save path
 	printf(" --> Reached goal! : Gap: %.3f \n", smallestGap );
+	printf("--(!) Random Count: %d \n", randomCount );
+	printf("--(!) Goal Count: %d \n", goalCount );
 	rrts.tracePath( rrts.activeNode, path, false );
 	rrtg.tracePath( rrtg.activeNode, path, true );
 
@@ -300,6 +310,7 @@ bool PathPlanner::checkPathSegment( int _robotId,
   for( int i = 0; i < n; i++ ) {
     Eigen::VectorXd conf = (double)(n - i)/(double)n * _config1 + (double)(i)/(double)n * _config2;
     world->getRobot(_robotId)->setDofs( conf, _links );
+		world->getRobot(_robotId)->update();
     if( world->checkCollision() ) {
       return false;
     }
@@ -318,7 +329,7 @@ void PathPlanner::smoothPath( int _robotId,
   // =========== YOUR CODE HERE ==================
   // HINT: Use whatever technique you like better, first try to shorten a path and then you can try to make it smoother
 
-	const int MAX_TRIES = 5000;
+	const int MAX_TRIES = 500;
 	// Strategy: randomly pick a pair of nodes (within some distance threshold) and try to connect them
 	// If there is no collision, then replace all in between nodes with a straight line.
 
@@ -348,7 +359,11 @@ void PathPlanner::smoothPath( int _robotId,
 		std::list<Eigen::VectorXd>::iterator nodeBit = std::next(_path.begin(), IDb);
 		Eigen::VectorXd nodeB = *nodeBit;
 
-		if( checkPathSegment(_robotId, _links, nodeA, nodeB) ) {
+		printf("Random pair %d of %d: %d %d; path size: %d\n", i, MAX_TRIES, IDa, IDb, _path.size());
+
+		bool clear = checkPathSegment(_robotId, _links, nodeA, nodeB);
+
+		if( clear ) {
 			// Collision free!
 			// First, remove in between nodes
 			std::advance(nodeAit, 1);
@@ -368,12 +383,14 @@ void PathPlanner::smoothPath( int _robotId,
 
 				// Scale this vector to stepSize and add to end of start
 				Eigen::VectorXd qnew = start + diff*(stepSize/dist);
-				_path.insert(nodeAit, qnew);
+				// Insert before endpoint
+				_path.insert(nodeBit, qnew);
 
 				// Increment "counter"
 				start = qnew;
-				std::advance(nodeAit, 1);
 			}
+		} else {
+			printf("Collision.\n");
 		}
 	}
 
