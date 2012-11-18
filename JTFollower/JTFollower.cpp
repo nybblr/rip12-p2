@@ -86,7 +86,6 @@ void JTFollower::init( int _robotId,
 std::vector< Eigen::VectorXd > JTFollower::PlanPath( const Eigen::VectorXd &_start,
 						     const std::vector<Eigen::VectorXd> &_workspacePath ) {
 
-
   //-- Follow the path
   std::vector< Eigen::VectorXd > configPath;
   Eigen::VectorXd q;
@@ -97,7 +96,7 @@ std::vector< Eigen::VectorXd > JTFollower::PlanPath( const Eigen::VectorXd &_sta
   q = _start;
 
   for( size_t i = 1; i < numPoints; ++i ) { // start from 1 since 0 is the current start position
-    if( GoToXYZ( q, _workspacePath[i], configPath ) == false ) {
+    if( GoToXYZ( q, GetXYZ(_workspacePath[i]), configPath ) == false ) {
       printf(" --(x) An error here, stop following path \n"); break;
     }
   }
@@ -137,8 +136,14 @@ bool JTFollower::GoToXYZ( Eigen::VectorXd &_q,
 
   //-- Initialize
   dXYZ = ( _targetXYZ - GetXYZ(_q) ); // GetXYZ also updates the config to _q, so Jaclin use an updated value
+  mWorld->getRobot(mRobotId)->setDofs( _q, mLinks );
+  mWorld->getRobot(mRobotId)->update();
+  if(mWorld->checkCollision()) {
+    std::cout << "Collision in GetXYZ, blowing up the coords!" << std::endl;
+    dXYZ = 100*dXYZ;
+  }
   iter = 0;
-  printf("New call to GoToXYZ: dXYZ: %f  \n", dXYZ.norm() );
+  //printf("New call to GoToXYZ: dXYZ: %f  \n", dXYZ.norm() );
   while( dXYZ.norm() > mWorkspaceThresh && iter < mMaxIter ) {
     printf("XYZ Error: %f \n", dXYZ.norm() );
     Eigen::MatrixXd Jt = GetPseudoInvJac(_q);
@@ -174,6 +179,8 @@ Eigen::VectorXd JTFollower::GetXYZ( Eigen::VectorXd _q ) {
   Eigen::MatrixXd qTransform = mEENode->getWorldTransform();
   Eigen::VectorXd qXYZ(3); qXYZ << qTransform(0,3), qTransform(1,3), qTransform(2,3);
 
+
+
   return qXYZ;
 }
 
@@ -208,7 +215,7 @@ Eigen::VectorXd Get3DMouse(Eigen::VectorXd mouse_calibration) {
   boost::split(strs, mouse_input, boost::is_any_of("|"));
 
   std::vector<double> vals;
-  for(std::vector<std::string>::iterator it = strs.begin(); it != strs.end(); ++it){ 
+  for(std::vector<std::string>::iterator it = strs.begin(); it != strs.end(); ++it){
     double num;
     std::stringstream strStream(*it);
     strStream >> num;

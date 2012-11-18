@@ -325,7 +325,7 @@ void JacobianMouseTab::OnButton(wxCommandEvent &evt) {
   case button_Run:
     int num_loops = 0;
     if ( mContinueRunning ){
-      num_loops = 10;
+      num_loops = 0;
     }
     do{
       if ( mContinueRunning ) {
@@ -344,20 +344,26 @@ void JacobianMouseTab::OnButton(wxCommandEvent &evt) {
 
       std::vector<Eigen::VectorXd> wsPath;
       Eigen::VectorXd start = mStartConfig;
-       
-      if( mContinueRunning ) {
-	Eigen::VectorXd current = mWorld->getRobot(mRobotId)->getDofs( mLinks );
-	if( jt->GoToXYZ( current, mTargetXYZ, wsPath ) == true){	
-	  printf("Found solution JT! Adding to timeline\n");
-	  SetTimeline( wsPath, false);
-	}
-	else{
-	  printf("NO Found solution JT! Plotting anyway \n");
-	  SetTimeline( wsPath ,false);
-	}
+
+      if( mContinueRunning ) {  // In accumulate mode
+	Eigen::VectorXd current = mWorld->getRobot(mRobotId)->getDofs( mLinks ); // current arm position
+
+	 if( jt->GoToXYZ( current, mTargetXYZ, wsPath ) == true){
+	   // We have a workspace path now. Lets use it.
+	   printf("Found solution JT! Adding to timeline\n");
+
+	   SetTimeline( jt->PlanPath(current, wsPath), false);
+	   //SetTimeline( wsPath, false);
+	 }
+	 else{
+	   printf("NO Found solution JT! Plotting anyway \n");
+
+	   SetTimeline(jt->PlanPath(current,wsPath), false);
+	   //SetTimeline( wsPath, false);
+	 }
       }
       else{
-	if( jt->GoToXYZ( start, mTargetXYZ, wsPath ) == true){	
+	if( jt->GoToXYZ( start, mTargetXYZ, wsPath ) == true){
 	  printf("Found solution JT! \n");
 	  SetTimeline( wsPath ,true);
 	}
@@ -366,11 +372,11 @@ void JacobianMouseTab::OnButton(wxCommandEvent &evt) {
 	  SetTimeline( wsPath ,true);
 	}
       }
-      
+
     } while ( --num_loops >= 0 );
-    
+
     break;
-    
+
   } // end switch
 }
 
