@@ -21,7 +21,7 @@ extern wxNotebook* tabView;
 class RipPlannerTabApp : public GRIPApp {
 	virtual void AddTabs() {
 		tabView->AddPage(new RipPlannerTab(tabView), wxT("RIP Planner"));
-#ifdef _WIN32
+#ifndef _WIN32
 		tabView->AddPage(new JacobianMouseTab(tabView), wxT("Mouse Planner"));
 #endif
 	}
