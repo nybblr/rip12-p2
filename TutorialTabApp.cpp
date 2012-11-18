@@ -7,19 +7,17 @@
  */
 
 #include "GRIPApp.h"
-#include "tabRipPlanner.h"
-#include "JacobianMouseTab.h"
+#include "TutorialTab.h"
 
 extern wxNotebook* tabView;
 
 /**
-	* @class RipPlannerTabApp
+	* @class TutorialTabApp
 	*/
-class RipPlannerTabApp : public GRIPApp {
+class TutorialTabApp : public GRIPApp {
 	virtual void AddTabs() {
-		tabView->AddPage(new RipPlannerTab(tabView), wxT("RIP Planner"));
-		tabView->AddPage(new JacobianMouseTab(tabView), wxT("Mouse Planner"));
+		tabView->AddPage(new TutorialTab(tabView), wxT("TutorialTab"));
 	}
 };
 
-IMPLEMENT_APP(RipPlannerTabApp)
+IMPLEMENT_APP(TutorialTabApp)

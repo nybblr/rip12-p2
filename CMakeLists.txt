@@ -23,6 +23,10 @@ LINK_DIRECTORIES( ${DART_LIBRARY_DIRS} )
 INCLUDE_DIRECTORIES( ${DART_INCLUDE_DIRS} )
 
 # Search all header and source files
+set ( jacobian_src JTFollower/spnav.c JacobianMouseTab.cpp JTFollower/JTFollower.cpp)
+set ( jacobian_hdr JTFollower/spnav.h JTFollower/spnav_config.h JacobianMouseTab.h JTFollower/JTFollower.h)
+set ( 3dmouse_src JTFollower/3dmouse.cpp JTFollower/spnav.c )
+set ( 3dmouse_hdr JTFollower/spnav.h JTFollower/spnav_config.h )
 set ( rip_srcs  tabRipPlannerApp.cpp tabRipPlanner.cpp RRT.cpp PathPlanner.cpp )
 set ( rip_hdrs  tabRipPlanner.h RRT.h PathPlanner.h )
 set ( kdtree_srcs kdtree/kdtree.c )
@@ -46,7 +50,8 @@ if (wxWidgets_FOUND)
   add_executable (tabRipPlanner WIN32 ${rip_srcs} ${rip_hdrs} ${kdtree_srcs} )
 	set_target_properties (tabRipPlanner PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
    else()
-  add_executable (tabRipPlanner ${rip_srcs} ${rip_hdrs} ${kdtree_srcs} )
+  add_executable (tabRipPlanner ${rip_srcs} ${rip_hdrs} ${kdtree_srcs} ${jacobian_src} ${jacobian_hdr})
+  add_executable (3dmouse ${3dmouse_src} ${3dmouse_hdr})
 endif()
 
   target_link_libraries (tabRipPlanner ${GRIP_LIBRARIES}  ${DART_LIBRARIES}  ${wxWidgets_LIBRARIES} ${OPENGL_LIBRARIES} ${GLUT_glut_LIBRARY} ${GLU_LIBRARIES} )
@@ -54,6 +59,3 @@ endif()
 else (wxWidgets_FOUND)
   message ("wxWidgets not found!")
 endif (wxWidgets_FOUND)
-
-
-
