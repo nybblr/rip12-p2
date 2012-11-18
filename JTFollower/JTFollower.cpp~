@@ -15,11 +15,13 @@
 #include "JTFollower.h"
 
 #include <Eigen/LU>
-#include "spnav.h"
-#include <fstream>
 
-spnav_event sev;
-std::ifstream mouse_fd;
+#include <stdio.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <X11/Xlib.h>
+#include <spnav.h>
+
 
 /**
  * @function JTFollower
@@ -176,45 +178,12 @@ Eigen::VectorXd JTFollower::GetXYZ( Eigen::VectorXd _q ) {
   return qXYZ;
 }
 
-bool Open3DMouse() {
-  mouse_fd.open("./3d_mouse_input");
-  return 0; // No local daemon
+Eigen::VectorXd JTFollower::Get3DMouse() {
+  spnav_event sev;
   if(spnav_open() == -1) {
     fprintf(stderr, "Failed to connect to space nav daemon\n");
     return 1;
   }
-  return 0;
-}
-
-bool Close3DMouse() {
-  mouse_fd.close();
-  return 0;
-  spnav_close();
-  return 0;
-}
-
-Eigen::VectorXd Get3DMouse(Eigen::VectorXd mouse_calibration) {
-  // mouse_calibration is a calibration matrix.
-  Eigen::VectorXd mouse_translation(3); //ignore rotation for now, so can get by with vector
-  mouse_translation << 0,0,0;
-  Eigen::VectorXd normalize(3); normalize << 350.0, 350.0, 350.0;
-
-  char mouse_input[256];
-  mouse_fd.getline(mouse_input,256);
-  std::cout << mouse_input << std::endl;
-
-
-  /* // Temporary bypass, use stdin instead!
-  while(!spnav_wait_event(&sev)) {
-  }
-  if(sev.type == SPNAV_EVENT_MOTION) {
-    mouse_translation << sev.motion.x, sev.motion.y, sev.motion.z; // make the vector
-    mouse_translation = mouse_translation.cwiseQuotient(normalize).cwiseProduct(mouse_calibration);
-    std::cout << mouse_translation << std::endl;
-    } else {
-  }
-  */
-  return mouse_translation;
 
 
 }

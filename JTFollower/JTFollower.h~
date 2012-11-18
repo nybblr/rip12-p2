@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2012, Georgia Tech Research Corporation
- * All rights reserved
+ * All rights reserved	
  * Author(s): Ana C. Huaman Quispe <ahuaman3@gatech.edu>
  * Georgia Tech Humanoid Robotics Lab
  * Under direction of Prof. Mike Stilman <mstilman@cc.gatech.edu>
@@ -34,7 +34,7 @@
  *   ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *   POSSIBILITY OF SUCH DAMAGE.
  *
- */
+ */	
 
 #ifndef _JT_FOLLOWER_H_
 #define _JT_FOLLOWER_H_
@@ -43,8 +43,7 @@
 #include <Eigen/Core>
 #include <vector>
 #include <robotics/World.h>
-#include <fstream>
-#include <iostream>
+
 /**
  * @class JTFollower
  * @brief Simple Follower with Jacobian Transpose
@@ -59,48 +58,41 @@ public:
     int mRobotId;
     Eigen::VectorXi mLinks;
     double mWorkspaceThresh;
-
+    
     dynamics::BodyNodeDynamics *mEENode;
     int mEEId;
     int mMaxIter;
-
+    
     /// Constructor
     JTFollower();
     JTFollower( robotics::World &_world,
                 bool _copyWorld = false,
                 double _configStep = 0.1 ); // 0.046 = 1_degree * sqrt(7)
-
+    
     void init( int _robotId,
 	       const Eigen::VectorXi &_links,
 	       std::string _EEName,
 	       int _EEId,
 	       double _res );
-
+    
     /// Destructor
     ~JTFollower();
-
+    
     /// Planner itself
-    std::vector< Eigen::VectorXd > PlanPath( const Eigen::VectorXd &_start,  // Configuration,
-					     const std::vector<Eigen::VectorXd> &_workspacePath ); // Pose
-
+    std::vector< Eigen::VectorXd > PlanPath( const Eigen::VectorXd &_start,  // Configuration,				     
+					     const std::vector<Eigen::VectorXd> &_workspacePath ); // Pose    
+    
     Eigen::MatrixXd GetPseudoInvJac( Eigen::VectorXd _q ) ;
-    bool GoToXYZ( Eigen::VectorXd &_q,
-		  Eigen::VectorXd _targetXYZ,
+    bool GoToXYZ( Eigen::VectorXd &_q, 
+		  Eigen::VectorXd _targetXYZ, 
 		  std::vector<Eigen::VectorXd> &_workspacePath );
     Eigen::VectorXd GetXYZ( Eigen::VectorXd _q );
-
-
-
-
+    
  private:
     /// Member variables
     bool mCopyWorld;
-
-
+    
 };
 
-bool Open3DMouse();
-bool Close3DMouse();
-Eigen::VectorXd Get3DMouse(Eigen::VectorXd mouse_calibration);
-
 #endif /** _JT_FOLLOWER_H_ */
+
