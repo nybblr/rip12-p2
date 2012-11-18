@@ -9,7 +9,7 @@
 #include "GRIPApp.h"
 #include "tabRipPlanner.h"
 
-#ifdef _WIN32
+#ifndef _WIN32
 #include "JacobianMouseTab.h"
 #endif
 
