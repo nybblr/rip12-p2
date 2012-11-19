@@ -209,25 +209,25 @@ Eigen::VectorXd Get3DMouse(Eigen::VectorXd mouse_calibration) {
   mouse_translation << 0,0,0;
   Eigen::VectorXd normalize(3); normalize << 350.0, 350.0, 350.0;
 
-  char mouse_input[256];
-  mouse_fd.getline(mouse_input,256);
-  std::cout << mouse_input << std::endl;
-  std::vector<std::string> strs;
-  boost::split(strs, mouse_input, boost::is_any_of("|"));
+  // char mouse_input[256];
+  // mouse_fd.getline(mouse_input,256);
+  // std::cout << mouse_input << std::endl;
+  // std::vector<std::string> strs;
+  // boost::split(strs, mouse_input, boost::is_any_of("|"));
 
-  std::vector<double> vals;
-  for(std::vector<std::string>::iterator it = strs.begin(); it != strs.end(); ++it){
-    double num;
-    std::stringstream strStream(*it);
-    strStream >> num;
-    vals.push_back(num);
-  }
-  double *ptr = &vals[0];
-  mouse_translation = Eigen::Map<Eigen::VectorXd>(ptr,3);
+  // std::vector<double> vals;
+  // for(std::vector<std::string>::iterator it = strs.begin(); it != strs.end(); ++it){
+  //   double num;
+  //   std::stringstream strStream(*it);
+  //   strStream >> num;
+  //   vals.push_back(num);
+  // }
+  // double *ptr = &vals[0];
+  // mouse_translation = Eigen::Map<Eigen::VectorXd>(ptr,3);
 
 
 
-  /* // Temporary bypass, use stdin instead!
+  // Temporary bypass, use stdin instead!
   while(!spnav_wait_event(&sev)) {
   }
   if(sev.type == SPNAV_EVENT_MOTION) {
@@ -236,9 +236,9 @@ Eigen::VectorXd Get3DMouse(Eigen::VectorXd mouse_calibration) {
     std::cout << mouse_translation << std::endl;
     } else {
   }
-  */
-  std::cout << mouse_translation << std::endl;
-  std::cout << "Done" << std::endl;
+
+  //std::cout << mouse_translation << std::endl;
+  //std::cout << "Done" << std::endl;
   return mouse_translation;
 
 
