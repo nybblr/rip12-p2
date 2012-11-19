@@ -136,15 +136,16 @@ bool JTFollower::GoToXYZ( Eigen::VectorXd &_q,
 
   //-- Initialize
   dXYZ = ( _targetXYZ - GetXYZ(_q) ); // GetXYZ also updates the config to _q, so Jaclin use an updated value
-  mWorld->getRobot(mRobotId)->setDofs( _q, mLinks );
-  mWorld->getRobot(mRobotId)->update();
-  if(mWorld->checkCollision()) {
-    std::cout << "Collision in GetXYZ, blowing up the coords!" << std::endl;
-    dXYZ = 100*dXYZ;
-  }
+
   iter = 0;
   //printf("New call to GoToXYZ: dXYZ: %f  \n", dXYZ.norm() );
   while( dXYZ.norm() > mWorkspaceThresh && iter < mMaxIter ) {
+    mWorld->getRobot(mRobotId)->setDofs( _q, mLinks );
+    mWorld->getRobot(mRobotId)->update();
+    if(mWorld->checkCollision()) {
+      std::cout << "Collision in GetXYZ, blowing up the coords!" << std::endl;
+      dXYZ = -1000*dXYZ;
+    }
     printf("XYZ Error: %f \n", dXYZ.norm() );
     Eigen::MatrixXd Jt = GetPseudoInvJac(_q);
     dConfig = Jt*dXYZ;
