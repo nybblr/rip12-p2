@@ -23,10 +23,13 @@ LINK_DIRECTORIES( ${DART_LIBRARY_DIRS} )
 INCLUDE_DIRECTORIES( ${DART_INCLUDE_DIRS} )
 
 # Search all header and source files
+if(WIN32)
+else(WIN32)
 set ( jacobian_src JTFollower/spnav.c JacobianMouseTab.cpp JTFollower/JTFollower.cpp)
 set ( jacobian_hdr JTFollower/spnav.h JTFollower/spnav_config.h JacobianMouseTab.h JTFollower/JTFollower.h)
 set ( 3dmouse_src JTFollower/3dmouse.cpp JTFollower/spnav.c )
 set ( 3dmouse_hdr JTFollower/spnav.h JTFollower/spnav_config.h )
+endif(WIN32)
 set ( rip_srcs  tabRipPlannerApp.cpp tabRipPlanner.cpp RRT.cpp PathPlanner.cpp )
 set ( rip_hdrs  tabRipPlanner.h RRT.h PathPlanner.h )
 set ( kdtree_srcs kdtree/kdtree.c )

@@ -9,3 +9,9 @@
 
 # Settings
 /.lastload
+
+*~
+*.swp
+*.pyc
+.#*
+#*#
